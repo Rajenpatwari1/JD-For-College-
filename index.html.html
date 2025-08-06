@@ -7,7 +7,7 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts - Inter for a modern look, Montserrat for headings -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght{700;800;900&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -129,7 +129,7 @@
             width: 100%;
             height: 100%;
             z-index: 1; /* Below text content */
-            opacity: 0.8; /* Increased opacity for more prominence */
+            opacity: 0.2; /* Significantly reduced opacity for better readability */
             pointer-events: none; /* Prevents canvas from blocking mouse events on text/links */
         }
 
@@ -458,6 +458,52 @@
             height: 200px;
             background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%);
             z-index: 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .header-banner {
+                padding: 4rem 1rem; /* Adjust padding for smaller screens */
+            }
+            .header-banner h1 {
+                font-size: 2.5rem; /* Smaller font size for main heading */
+            }
+            .header-banner p {
+                font-size: 1.25rem; /* Smaller font size for subheading */
+            }
+            .section-card {
+                padding: 1.5rem; /* Reduced padding for section cards */
+            }
+            .section-card h2 {
+                font-size: 2rem; /* Smaller font size for section headings */
+                margin-bottom: 1.5rem;
+            }
+            .position-detail-item {
+                padding: 0.75rem; /* Reduced padding for detail items */
+            }
+            .position-detail-item h4 {
+                font-size: 1rem; /* Smaller font size for detail item headings */
+            }
+            .position-detail-item p {
+                font-size: 0.8rem; /* Smaller font size for detail item paragraphs */
+            }
+            .career-step-item {
+                padding: 1rem; /* Reduced padding for career steps */
+                margin-bottom: 2rem; /* Reduced margin for career steps */
+            }
+            .career-step-item h3 {
+                font-size: 1.1rem; /* Smaller font size for career step headings */
+            }
+            .why-join-list li, .eligibility-list li {
+                padding: 0.8rem 1rem; /* Reduced padding for list items */
+                font-size: 0.85rem; /* Reduced font size for list items */
+            }
+            .why-join-list i, .eligibility-list i {
+                font-size: 1.1rem; /* Adjusted icon size */
+            }
+            .tradingview-widget-container {
+                height: 50px; /* Slightly smaller height for mobile ticker */
+            }
         }
     </style>
 </head>
