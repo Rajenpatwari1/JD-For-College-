@@ -527,7 +527,7 @@
         <!-- Job Details Content - Initially Hidden -->
         <div id="job-details-content" class="hidden">
             <!-- About OnePaper Section -->
-            <section id="about-us" class="container mx-auto px-4 py-16 mb-12 animate-on-scroll">
+            <section id="about-us" class="container mx-auto px-4 py-16 mb-12 animate-on-scroll hidden">
                 <div class="about-onepaper-section">
                     <div class="relative z-10">
                         <h2 class="text-3xl font-extrabold font-['Montserrat'] text-white mb-6">
@@ -550,7 +550,7 @@
                 <!-- Left Column -->
                 <div class="space-y-12">
                     <!-- Position Details -->
-                    <section id="position-details" class="animate-on-scroll">
+                    <section id="position-details" class="animate-on-scroll hidden">
                         <div class="section-card">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
                                 Position Details
@@ -623,7 +623,7 @@
                     </section>
 
                     <!-- Key Responsibilities -->
-                    <section id="responsibilities" class="animate-on-scroll">
+                    <section id="responsibilities" class="animate-on-scroll hidden">
                         <div class="section-card">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
                                 Key Responsibilities
@@ -688,7 +688,7 @@
                     </section>
 
                     <!-- Why Join OnePaper -->
-                    <section id="why-join" class="animate-on-scroll">
+                    <section id="why-join" class="animate-on-scroll hidden">
                         <div class="section-card">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
                                 Why Join Us?
@@ -746,7 +746,7 @@
                 <!-- Right Column -->
                 <div class="space-y-12">
                     <!-- Location -->
-                    <section id="location" class="animate-on-scroll">
+                    <section id="location" class="animate-on-scroll hidden">
                         <div class="section-card location-section">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
                                 Our Office Location
@@ -771,7 +771,7 @@
                     </section>
 
                     <!-- Required Skills & Eligibility -->
-                    <section id="required-skills" class="animate-on-scroll">
+                    <section id="required-skills" class="animate-on-scroll hidden">
                         <div class="section-card">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
                                 Required Skills & Eligibility
@@ -844,7 +844,7 @@
                     </section>
 
                     <!-- Career Path -->
-                    <section id="career-path" class="animate-on-scroll">
+                    <section id="career-path" class="animate-on-scroll hidden">
                         <div class="career-path-new">
                             <h2 class="text-3xl font-extrabold font-['Montserrat'] text-white text-center mb-8">
                                 Career Path
@@ -877,7 +877,7 @@
         <!-- End of Job Details Content -->
 
         <!-- Footer -->
-        <footer class="bg-gray-950 text-gray-400 text-center py-6 border-t-2 border-gray-800">
+        <footer class="bg-gray-950 text-gray-400 text-center py-6 border-t-2 border-gray-800 animate-on-scroll hidden">
             <p>&copy; 2024 OnePaper Research Analysts. All rights reserved.</p>
         </footer>
     </main>
@@ -1000,9 +1000,32 @@
         // Function to show job details and scroll
         function showJobDetails() {
             const jobDetailsContent = document.getElementById('job-details-content');
-            jobDetailsContent.classList.remove('hidden'); // Make content visible
-            // Scroll to the "About OnePaper Research Analysts" section
-            document.getElementById('about-us').scrollIntoView({ behavior: 'smooth' });
+            jobDetailsContent.classList.remove('hidden'); // Make the main content wrapper visible
+
+            const sectionsToReveal = document.querySelectorAll('#job-details-content > section.animate-on-scroll, #job-details-content > div > div > section.animate-on-scroll, #job-details-content > footer.animate-on-scroll');
+            let delay = 0;
+            let firstSectionScrolled = false;
+
+            sectionsToReveal.forEach((section) => {
+                // Ensure the section is initially hidden if it has animate-on-scroll
+                // This handles cases where it might not have the 'hidden' class from the start
+                section.classList.add('hidden');
+            });
+
+
+            sectionsToReveal.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.remove('hidden'); // Remove hidden to allow animation
+                    section.classList.add('is-visible'); // Trigger the fade-in/slide-up animation
+
+                    if (!firstSectionScrolled) {
+                        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        firstSectionScrolled = true;
+                    }
+                }, delay);
+                delay += 300; // 300ms delay between each section
+            });
+            document.getElementById('learn-more-button').disabled = true; // Disable button after click
         }
 
         // Scroll Animation Logic and Three.js initialization
@@ -1020,15 +1043,29 @@
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
+                        // Only add 'is-visible' if the section is not hidden by the "Learn More" logic
+                        if (!entry.target.classList.contains('hidden')) {
+                            entry.target.classList.add('is-visible');
+                        }
+                    } else {
+                        // Optionally remove is-visible when not intersecting, if you want re-animation on scroll back up
+                        // entry.target.classList.remove('is-visible');
                     }
                 });
             }, observerOptions);
 
             sections.forEach(section => {
+                // Initially add 'hidden' to all sections that should be revealed by "Learn More"
+                // This ensures they are hidden on page load before the button is clicked.
+                // The IntersectionObserver will only apply 'is-visible' once 'hidden' is removed.
+                if (section.closest('#job-details-content')) { // Only hide sections within the job-details-content div
+                    section.classList.add('hidden');
+                }
                 observer.observe(section);
+
+                // Initial check for elements already in view on load (e.g., header)
                 const rect = section.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                if (rect.top < window.innerHeight && rect.bottom > 0 && !section.closest('#job-details-content')) {
                     section.classList.add('is-visible');
                 }
             });
