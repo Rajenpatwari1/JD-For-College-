@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relationship Manager - OnePaper Research Analysts</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter for a modern look, Montserrat for headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for specific elements not easily achievable with direct Tailwind classes */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll due to animations */
+            background-color: #1a202c; /* Dark background */
+            padding-top: 0; /* Ensures TradingView widget is at the very top */
+            font-size: 0.9rem; /* Reduced base font size for the entire page */
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Header banner background image overlay */
+        .header-banner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80') center/cover;
+            opacity: 0.08;
+            z-index: 0; /* Ensure it's behind content */
+        }
+
+        /* Detail card bottom border for hover effect (repurposed for inner cards) */
+        .detail-card::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #000000, #333333); /* Darker gradient */
+            transition: all 0.3s ease-in-out;
+        }
+        .detail-card:hover::after {
+            background: linear-gradient(to right, #fbcfe8, #a78bfa); /* Pink/purple gradient on hover */
+        }
+
+        /* CTA section top border */
+        .cta-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #000000, #fbcfe8); /* Baby pink */
+        }
+
+        /* Keyframe animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes checkmarkAnim {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes popInSlow {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Apply animations on scroll */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .animate-on-scroll.is-visible .detail-card {
+            animation: popIn 0.6s ease-out forwards;
+        }
+        .animate-on-scroll.is-visible .responsibility-item {
+            animation: slideInLeft 0.7s ease-out forwards;
+        }
+        .animate-on-scroll.is-visible .responsibility-item i {
+            animation: checkmarkAnim 0.5s ease-out forwards;
+        }
+        .animate-on-scroll.is-visible .section-header-decoration {
+            animation: popInSlow 0.8s ease-out forwards;
+        }
+
+        /* Three.js canvas styling */
+        #three-canvas {
+            position: fixed; /* Changed to fixed to cover the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Below text content */
+            opacity: 0.8; /* Increased opacity for more prominence */
+            pointer-events: none; /* Prevents canvas from blocking mouse events on text/links */
+        }
+
+        /* TradingView widget styling */
+        .tradingview-widget-container {
+            width: 100%;
+            height: 60px; /* Adjust height as needed */
+            overflow: hidden;
+            background-color: #1a202c; /* Match body background */
+            position: sticky;
+            top: 0; /* Sticky to the top */
+            z-index: 50; /* Ensure it's above other content when scrolling */
+            border-bottom: 1px solid rgba(251, 191, 232, 0.2); /* Light pink border */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
+        }
+        .tradingview-widget-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* New Career Path Styling */
+        .career-path-new {
+            background-color: #252932;
+            border-image: linear-gradient(to right, #fbcfe8, #a78bfa) 1;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .career-path-steps {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding-top: 2rem;
+        }
+
+        .career-path-steps::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            background: linear-gradient(to bottom, #a78bfa, #fbcfe8);
+            z-index: 0;
+        }
+
+        .career-step-item {
+            position: relative;
+            background: linear-gradient(to bottom, #3a404a, #2c313c);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 3rem; /* Increased space between items */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            transition: all 0.4s ease-in-out;
+            color: #e2e8f0;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            z-index: 1;
+        }
+
+        .career-step-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .career-step-item:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            border-color: rgba(167, 139, 250, 0.8);
+        }
+
+        .career-step-item::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: #fbcfe8;
+            border-radius: 50%;
+            border: 4px solid #1a202c;
+            box-shadow: 0 0 15px rgba(251, 191, 232, 0.8);
+            z-index: 2;
+        }
+
+        .career-step-item h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fbcfe8;
+        }
+
+        /* --- New styles for Position Details, Responsibilities, Skills, Career, Why Join, Eligibility --- */
+        .section-card {
+            background-color: #252932; /* A deeper, more solid dark background for the main card */
+            border: 2px solid transparent; /* Start with transparent border */
+            border-image: linear-gradient(to right, #fbcfe8, #a78bfa) 1; /* Gradient border */
+            border-radius: 1.5rem;
+            padding: 2.5rem; /* Increased padding */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5); /* Stronger shadow */
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+            z-index: 10;
+        }
+
+        .section-card:hover {
+            transform: translateY(-8px) scale(1.01); /* More pronounced lift and slight scale */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+        }
+
+        .section-card h2 {
+            border-bottom: none; /* Remove previous border */
+            position: relative; /* For pseudo-element underline */
+            padding-bottom: 1rem;
+            margin-bottom: 2rem; /* More space below heading */
+            font-size: 2.5rem; /* Larger heading */
+            color: #e2e8f0;
+            text-shadow: 0 0 10px rgba(251, 191, 232, 0.2); /* Subtle text glow */
+        }
+
+        .section-card h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 80px; /* Short, prominent underline */
+            height: 4px;
+            background: linear-gradient(to right, #fbcfe8, #a78bfa); /* Pink-blue underline */
+            border-radius: 2px;
+        }
+
+        .section-card .detail-card {
+            background: linear-gradient(to bottom, #3a404a, #2c313c); /* Subtle gradient for inner cards */
+            border: 1px solid rgba(251, 191, 232, 0.3); /* Slightly more visible pink border */
+            border-radius: 1rem; /* Consistent rounded corners */
+            padding: 1.5rem; /* Increased padding */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease-in-out;
+            overflow: hidden; /* For inner pseudo-elements if added later */
+        }
+
+        .section-card .detail-card:hover {
+            background: linear-gradient(to bottom, #4a504a, #3a404a); /* Darker gradient on hover */
+            transform: translateY(-5px); /* More noticeable lift */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border-color: rgba(251, 191, 232, 0.7); /* More prominent pink border on hover */
+        }
+
+        .section-card .detail-card h4 {
+            color: #e2e8f0; /* Lighter text for better contrast */
+        }
+
+        .section-card .detail-card i {
+            color: #fbcfe8; /* Consistent pink for icons in detail/responsibility cards */
+            text-shadow: 0 0 8px rgba(251, 191, 232, 0.6); /* Stronger glow for icons */
+        }
+
+        /* New design for position details */
+        .position-detail-item {
+            background-color: #2c313c;
+            border-radius: 1rem;
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            border-left: 5px solid transparent;
+            position: relative;
+            transition: all 0.3s ease-in-out;
+            margin-bottom: 1rem;
+        }
+        .position-detail-item:last-child {
+            margin-bottom: 0;
+        }
+        .position-detail-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: #a78bfa;
+            border-radius: 1rem 0 0 1rem;
+            opacity: 0.5;
+            transition: all 0.3s ease-in-out;
+        }
+        .position-detail-item:hover::before {
+            background: #8b5cf6;
+            opacity: 1;
+            box-shadow: 0 0 20px #8b5cf6;
+        }
+        .position-detail-item .icon-wrapper {
+            background-color: #3a404a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .position-detail-item .icon-wrapper i {
+            color: #fbcfe8;
+        }
+        .position-detail-item h4 {
+            font-weight: bold;
+            color: #e2e8f0;
+            font-size: 1.125rem;
+        }
+        .position-detail-item p {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* End of new design for position details */
+
+
+        .section-card .location-section {
+            background: linear-gradient(to bottom, #3a404a, #2c313c); /* Match inner card gradient */
+            border: 1px solid rgba(167, 139, 250, 0.3); /* Blue border for location */
+            border-radius: 1rem;
+            padding: 2rem; /* Increased padding */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .section-card .location-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border-color: rgba(167, 139, 250, 0.7);
+        }
+        .section-card .location-icon {
+            background-color: #a78bfa; /* Blue background for location icon */
+            color: #1a202c; /* Dark text for contrast */
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.8); /* Stronger blue glow */
+            animation: pulse 1.5s infinite ease-in-out; /* Add pulse animation */
+        }
+        .section-card .location-link {
+            background-color: #a78bfa; /* Blue button for maps */
+            color: #1a202c;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+        .section-card .location-link:hover {
+            background-color: #8b5cf6; /* Darker blue on hover */
+            box-shadow: 0 8px 20px rgba(167, 139, 250, 0.6);
+            transform: translateY(-3px);
+        }
+
+        /* Why Join OnePaper list items */
+        .why-join-list li {
+            background: linear-gradient(to right, #3a404a, #2c313c); /* Gradient for list items */
+            border: 1px solid rgba(251, 191, 232, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease-in-out;
+        }
+        .why-join-list li:hover {
+            background: linear-gradient(to right, #4a504a, #3a404a);
+            transform: translateX(10px); /* More pronounced slide */
+            border-color: rgba(251, 191, 232, 0.7);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        .why-join-list i {
+            color: #a78bfa; /* Blue icons for why join */
+            text-shadow: 0 0 8px rgba(167, 139, 250, 0.6); /* Stronger glow */
+        }
+
+        /* Eligibility list items */
+        .eligibility-list li {
+            background: linear-gradient(to right, #3a404a, #2c313c);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease-in-out;
+        }
+        .eligibility-list li:hover {
+            background: linear-gradient(to right, #4a504a, #3a404a);
+            transform: translateX(10px); /* More pronounced slide */
+            border-color: rgba(167, 139, 250, 0.7);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+        .eligibility-list i {
+            color: #fbcfe8; /* Pink icons for eligibility */
+            text-shadow: 0 0 8px rgba(251, 191, 232, 0.6); /* Stronger glow */
+        }
+
+        /* New About section styling */
+        .about-onepaper-section {
+            background: linear-gradient(to right, #2a303c, #1a202c);
+            border: 1px solid rgba(251, 191, 232, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .about-onepaper-section::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(251, 191, 232, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .about-onepaper-section::after {
+            content: "";
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <!-- TradingView Widget BEGIN - Moved to the very top and made sticky -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+            "symbols": [
+                {
+                    "proName": "FOREXCOM:SPXUSD",
+                    "title": "S&P 500"
+                },
+                {
+                    "proName": "FOREXCOM:NSXUSD",
+                    "title": "US 100"
+                },
+                {
+                    "proName": "BITSTAMP:BTCUSD",
+                    "title": "Bitcoin"
+                },
+                {
+                    "description": "NIFTY 50",
+                    "proName": "NSE:NIFTY"
+                },
+                {
+                    "description": "BANK NIFTY",
+                    "proName": "NSE:BANKNIFTY"
+                },
+                {
+                    "description": "TATASTEEL",
+                    "proName": "NSE:TATASTEEL"
+                }
+            ],
+            "showSymbolLogo": true
+        }
+        </script>
+    </div>
+    <!-- TradingView Widget END -->
+
+    <!-- Main container for content -->
+    <main class="relative z-20">
+        <!-- Three.js Canvas -->
+        <canvas id="three-canvas"></canvas>
+
+        <!-- Header Section -->
+        <header class="relative overflow-hidden header-banner rounded-b-[2rem] md:rounded-b-[4rem] text-center p-8 md:p-12 lg:p-16 mb-12 border-b-8 border-gray-800">
+            <!-- Overlay for the background image -->
+            <div class="absolute inset-0 bg-gray-900 opacity-90"></div>
+            <!-- Header content is on top of the overlay -->
+            <div class="relative z-10">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-['Montserrat'] leading-tight mb-4 text-white animate-on-scroll">
+                    Relationship Manager
+                </h1>
+                <p class="text-xl sm:text-2xl lg:text-3xl font-light text-purple-300 animate-on-scroll" style="animation-delay: 0.2s;">
+                    OnePaper Research Analysts
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-6 animate-on-scroll" style="animation-delay: 0.4s;">
+                    <button id="learn-more-button" class="bg-fuchsia-400 text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Job Details Content - Initially Hidden -->
+        <div id="job-details-content" class="hidden">
+            <!-- About OnePaper Section -->
+            <section id="about-us" class="container mx-auto px-4 py-16 mb-12 animate-on-scroll">
+                <div class="about-onepaper-section">
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-extrabold font-['Montserrat'] text-white mb-6">
+                            About OnePaper Research Analysts
+                        </h2>
+                        <p class="text-gray-300 leading-relaxed mb-2">
+                            Founded in 2020, we are a dedicated intraday stock research firm providing precise, real-time market analysis to help clients make smart, confident trading decisions. Our focus is on accuracy, speed, and continuous improvement in research capabilities.
+                        </p>
+                        <p class="text-gray-300 leading-relaxed">
+                            <a href="https://www.onepaper.in" target="_blank" rel="noopener noreferrer" class="text-fuchsia-400 hover:underline">
+                                www.onepaper.in
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main content area -->
+            <div class="container mx-auto px-4 py-8 mb-12 grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+                <!-- Left Column -->
+                <div class="space-y-12">
+                    <!-- Position Details -->
+                    <section id="position-details" class="animate-on-scroll">
+                        <div class="section-card">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
+                                Position Details
+                            </h2>
+                            <div class="space-y-4">
+                                <!-- Role -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Role</h4>
+                                        <p>Relationship Manager</p>
+                                    </div>
+                                </div>
+                                <!-- Department -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-sitemap"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Department</h4>
+                                        <p>Sales & Client Relations</p>
+                                    </div>
+                                </div>
+                                <!-- Experience -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Experience</h4>
+                                        <p>Freshers welcome (with good learning attitude)</p>
+                                    </div>
+                                </div>
+                                <!-- Joining -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Joining</h4>
+                                        <p>Immediate</p>
+                                    </div>
+                                </div>
+                                <!-- Shift Timing -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Shift Timing</h4>
+                                        <p>9:00 AM – 6:00 PM</p>
+                                    </div>
+                                </div>
+                                <!-- Salary -->
+                                <div class="position-detail-item">
+                                    <div class="icon-wrapper">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div>
+                                        <h4>Salary</h4>
+                                        <p><span class="font-bold">Fixed Salary:</span> ₹20,000 per month</p>
+                                        <p><span class="font-bold">Incentives:</span> ₹21,000 (Performance-based, uncapped)</p>
+                                        <p class="font-bold text-lg text-fuchsia-400">CTC: ₹4.92 LPA</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Key Responsibilities -->
+                    <section id="responsibilities" class="animate-on-scroll">
+                        <div class="section-card">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
+                                Key Responsibilities
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-phone-alt text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Client Acquisition</h4>
+                                        <p class="text-gray-300 text-base">Call potential clients and generate interest in our services.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-comments-dollar text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Consultative Sales</h4>
+                                        <p class="text-gray-300 text-base">Employ a consultative selling approach to understand client needs.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-arrow-alt-circle-up text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Service Upselling & CRM</h4>
+                                        <p class="text-gray-300 text-base">Upsell additional services and maintain client records in CRM.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-handshake text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Cross-functional Collaboration</h4>
+                                        <p class="text-gray-300 text-base">Collaborate with marketing and research teams for client success.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-chart-line text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Performance Targets</h4>
+                                        <p class="text-gray-300 text-base">Consistently meet and exceed monthly Key Performance Indicators.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-user-friends text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Client Relationship Management</h4>
+                                        <p class="text-gray-300 text-base">Build long-term relationships by providing exceptional post-sales support and follow-ups.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Why Join OnePaper -->
+                    <section id="why-join" class="animate-on-scroll">
+                        <div class="section-card">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
+                                Why Join Us?
+                            </h2>
+                            <ul class="why-join-list space-y-4 text-lg">
+                                <li class="flex items-start p-4 rounded-xl shadow-md">
+                                    <i class="fas fa-chalkboard-teacher text-purple-300 mr-4 text-2xl mt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-purple-300">
+                                            Expert Training
+                                        </h4>
+                                        <p class="text-gray-300 text-base">
+                                            Receive training from NISM-certified experts.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start p-4 rounded-xl shadow-md">
+                                    <i class="fas fa-star text-purple-300 mr-4 text-2xl mt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-purple-300">
+                                            Rewards & Incentives
+                                        </h4>
+                                        <p class="text-gray-300 text-base">
+                                            Enjoy high-performing incentives and rewards.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start p-4 rounded-xl shadow-md">
+                                    <i class="fas fa-users text-purple-300 mr-4 text-2xl mt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-purple-300">
+                                            Collaborative Environment
+                                        </h4>
+                                        <p class="text-gray-300 text-base">
+                                            Work within an energetic and collaborative team environment.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start p-4 rounded-xl shadow-md">
+                                    <i class="fas fa-rocket text-purple-300 mr-4 text-2xl mt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-purple-300">
+                                            Clear Career Path
+                                        </h4>
+                                        <p class="text-gray-300 text-base">
+                                            Benefit from a clear career growth path and leadership opportunities.
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-12">
+                    <!-- Location -->
+                    <section id="location" class="animate-on-scroll">
+                        <div class="section-card location-section">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
+                                Our Office Location
+                            </h2>
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="icon-wrapper flex items-center justify-center w-12 h-12 rounded-full bg-purple-600 text-gray-900 shadow-lg">
+                                    <i class="fas fa-map-marker-alt text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-2xl font-bold text-purple-300">
+                                        Bengaluru, Karnataka
+                                    </h4>
+                                    <p class="text-gray-300">
+                                        Gajanana Towers, 219, 2nd Floor, 9th Cross Rd, JP Nagar, Bengaluru. 560078
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="https://maps.app.goo.gl/JnN9d8aWwygLg8Rk8" target="_blank" rel="noopener noreferrer" class="location-link flex items-center justify-center w-full mt-6 py-3 px-6 rounded-full text-center bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg transition-all duration-300 transform hover:scale-105">
+                                View on Google Maps <i class="fas fa-external-link-alt ml-3"></i>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Required Skills & Eligibility -->
+                    <section id="required-skills" class="animate-on-scroll">
+                        <div class="section-card">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] mb-6 text-white">
+                                Required Skills & Eligibility
+                            </h2>
+                            <div class="space-y-4">
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-comments text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Communication</h4>
+                                        <p class="text-gray-300 text-base">Excellent English with 2 regional languages or Excellent English with Hindi.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-hand-holding-heart text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Customer Focus</h4>
+                                        <p class="text-gray-300 text-base">A customer-focused approach is essential.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-tachometer-alt text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Pressure Handling</h4>
+                                        <p class="text-gray-300 text-base">Ability to perform under pressure.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-lightbulb text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Problem Solving</h4>
+                                        <p class="text-gray-300 text-base">A proactive problem-solving mindset.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start detail-card">
+                                    <div class="icon-wrapper mr-4 mt-1">
+                                        <i class="fas fa-graduation-cap text-2xl text-purple-300"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-lg text-fuchsia-400">Eligibility</h4>
+                                        <ul class="eligibility-list list-none space-y-2 text-gray-300 text-base mt-2 pl-0">
+                                            <li class="flex items-center">
+                                                <i class="fas fa-check-circle text-fuchsia-400 text-lg mr-2"></i>
+                                                Any graduate/postgraduate.
+                                            </li>
+                                            <li class="flex items-center">
+                                                <i class="fas fa-check-circle text-fuchsia-400 text-lg mr-2"></i>
+                                                Freshers are welcome.
+                                            </li>
+                                            <li class="flex items-center">
+                                                <i class="fas fa-check-circle text-fuchsia-400 text-lg mr-2"></i>
+                                                No % criteria – a learning mindset is what matters most.
+                                            </li>
+                                            <li class="flex items-center">
+                                                <i class="fas fa-check-circle text-fuchsia-400 text-lg mr-2"></i>
+                                                A passion for stock markets is a plus.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Career Path -->
+                    <section id="career-path" class="animate-on-scroll">
+                        <div class="career-path-new">
+                            <h2 class="text-3xl font-extrabold font-['Montserrat'] text-white text-center mb-8">
+                                Career Path
+                            </h2>
+                            <p class="text-gray-300 leading-relaxed text-center mb-6">
+                                At OnePaper, we believe in recognizing talent and providing accelerated career progression for high performers.
+                            </p>
+                            <div class="career-path-steps">
+                                <div class="career-step-item">
+                                    <h3>Relationship Manager</h3>
+                                </div>
+                                <div class="career-step-item">
+                                    <h3>Senior Relationship Manager</h3>
+                                </div>
+                                <div class="career-step-item">
+                                    <h3>Team Lead</h3>
+                                </div>
+                                <div class="career-step-item">
+                                    <h3>Regional Manager</h3>
+                                </div>
+                                <div class="career-step-item">
+                                    <h3>Director / VP of Sales</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <!-- End of Job Details Content -->
+
+        <!-- Footer -->
+        <footer class="bg-gray-950 text-gray-400 text-center py-6 border-t-2 border-gray-800">
+            <p>&copy; 2024 OnePaper Research Analysts. All rights reserved.</p>
+        </footer>
+    </main>
+
+    <!-- Three.js and animation scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, stockBars, gridLines;
+        let mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+        let time = 0;
+        const numBars = 60; // Number of bars in the graph
+        const barWidth = 0.5;
+        const barDepth = 0.5;
+        const spacing = 1.0; // Spacing between bars
+        const maxBarHeight = 10;
+
+        function initThreeJS() {
+            // Set up scene, camera, and renderer
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('three-canvas'),
+                alpha: true,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Add ambient light for overall illumination
+            const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
+            scene.add(ambientLight);
+
+            // Add a directional light for a sense of direction and shadows
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(0, 10, 5);
+            scene.add(directionalLight);
+
+            // Create the dynamic 3D stock bars
+            stockBars = new THREE.Group();
+            const startX = -(numBars * spacing) / 2;
+
+            for (let i = 0; i < numBars; i++) {
+                const height = Math.random() * maxBarHeight + 1; // Random height
+                const isUp = Math.random() > 0.5; // Simulate up or down movement
+                const color = isUp ? 0x00BFFF : 0xFF4500; // Deep Sky Blue for up, Orange Red for down
+
+                const geometry = new THREE.BoxGeometry(barWidth, height, barDepth);
+                const material = new THREE.MeshStandardMaterial({
+                    color: color,
+                    roughness: 0.5,
+                    metalness: 0.8,
+                    emissive: color,
+                    emissiveIntensity: 0.1
+                });
+                const bar = new THREE.Mesh(geometry, material);
+                bar.position.set(startX + i * spacing, height / 2, 0); // Position bars
+                bar.scale.y = 0.1; // Start small for animation
+                bar.userData.targetHeight = height;
+                bar.userData.currentHeight = 0.1;
+                bar.userData.velocity = 0;
+                stockBars.add(bar);
+            }
+            stockBars.position.y = -5; // Adjust vertical position
+            scene.add(stockBars);
+
+            // Create a subtle grid to mimic the background lines in the image
+            const gridHelper = new THREE.GridHelper(40, 40, 0x444444, 0x444444); // Dark gray grid
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.3;
+            scene.add(gridHelper);
+
+            camera.position.z = 30; // Further back to see more of the grid
+            camera.position.y = 10; // Higher up
+            camera.lookAt(0, 0, 0);
+
+            // Add event listeners for interactivity
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+            animate();
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX - windowHalfX) * 0.005;
+            mouseY = (event.clientY - windowHalfY) * 0.005;
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01; // Animation speed
+
+            // Animate stock bars
+            if (stockBars) {
+                stockBars.children.forEach((bar, index) => {
+                    // Simple sinusoidal animation for height
+                    const targetHeight = (Math.sin(time + index * 0.2) * 0.5 + 0.5) * maxBarHeight;
+                    bar.userData.currentHeight += (targetHeight - bar.userData.currentHeight) * 0.05;
+                    bar.scale.y = bar.userData.currentHeight / bar.userData.targetHeight;
+                    bar.position.y = bar.userData.currentHeight / 2 - 5; // Keep base at -5
+                });
+                stockBars.rotation.y += 0.0005; // Subtle rotation of the entire group
+            }
+
+            // Animate camera based on mouse position
+            camera.position.x += (mouseX * 3 - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY * 3 - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        // Function to show job details and scroll
+        function showJobDetails() {
+            const jobDetailsContent = document.getElementById('job-details-content');
+            jobDetailsContent.classList.remove('hidden'); // Make content visible
+            // Scroll to the "About OnePaper Research Analysts" section
+            document.getElementById('about-us').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Scroll Animation Logic and Three.js initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+
+            const sections = document.querySelectorAll('.animate-on-scroll');
+
+            const observerOptions = {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.1 // 10% of the section must be visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    section.classList.add('is-visible');
+                }
+            });
+
+            // Attach event listener to the "Learn More" button
+            document.getElementById('learn-more-button').addEventListener('click', showJobDetails);
+        });
+    </script>
+</body>
+</html>
